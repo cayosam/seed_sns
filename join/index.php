@@ -46,6 +46,16 @@ if (isset($_POST) && !empty($_POST)){
     //emptyではなくissetなのか、$errorという変数が存在していなかった場合、入力が正常と認識
     if (!isset($error)) {
 
+      //画像の拡張子チェック
+      // .jpg .png .gif はOK
+      //substr...文字列から範囲指定して一部分の文字を切り出す関数
+      //substr （文字列、切り出す文字のスタートの数）マイナスの場合は末尾からn文字目となる
+      //例）i.png がファイル名の場合、$extpng
+
+      $ext = substr($_FILES['picture_path']['name'], -3);
+
+     if(($ext == 'png')||($ext == 'jpg')||($ext == 'gif')){
+
     //画像のアップロード処理
     //例）eriko1.pngを指定した時、$_picture_nameの中身は20171222142530eriko1.pngというような文字列が代入される。
     //（eriko1.pngは元々のファイルの名前、201712221425は日時）$_FILES['picture_path']['name']はファイル専用のグローバル変数。二次元配列になっている。
@@ -59,15 +69,23 @@ if (isset($_POST) && !empty($_POST)){
 
 
     //SESSHION変数に入力された値を保存(どこの画面からでも使用できる！)
-    //注意※必ずファイルの一番上に session_start(); と書く！！
-    //joinは自分で作った変数。$_POST送信された情報をjoinキー指定丸ごと代入し、保存
-        $_SESSION['join'] = $_POST;
-        $_SESSION['join']['picture_path'] = $picture_name;
-    //check.phpに移動
-        header('Location: check.php');
-    //これ以下のコードを無駄に処理しないために、このページの処理を終了させる
-    exit();
+    //注意※必ず、ファイルの一番上に、session_
+
+      $_SESSION['join'] = $_POST;
+      $_SESSION['join']['picture_path'] = $picture_name;
+
+    //check.php
+      header('Location: check.php');
+
+      //これ以下のコードを無駄に処理しないように、ページの処理を終了させる
+      exit();
+
+
+    }else{
+      $error["image"] = 'type';
     }
+  }
+
 }
 ?>
 
@@ -162,6 +180,9 @@ if (isset($_POST) && !empty($_POST)){
             <label class="col-sm-4 control-label">プロフィール写真</label>
             <div class="col-sm-8">
               <input type="file" name="picture_path" class="form-control">
+              <?php if ((isset($error["image"]) && ($error["image"]) == 'type')){ ?>
+               <p class="error">* 画像ファイルを選択してください。</p>
+             <?php } ?> 
             </div>
           </div>
 
