@@ -1,3 +1,51 @@
+<?php
+
+//DB接続する(５業おまとめ、同じ階層にdbconnectがあるため../が不要)
+
+require('dbconnect.php');
+
+//POST送信されていたら
+//認証処理
+if (isset($_POST) && !empty($_POST)){
+  //認証処理(SELECT文実行)
+  try {
+    //メンバーズテーブルでテーブルの中からメールアドレスとパスワードが入力されたものと合致する
+    //データを取得
+    $sql = "SELECT * FROM `members` WHERE `email`=? AND `password`=?";
+
+    //SQL文実行
+    //パスワードは、入力されてものを暗号化した上で使用する
+    $data = array($_POST["email"],sha1($_POST["password"]));
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+
+    //1行所得
+    $member = $stmt->fetch(PDO::FETCH_ASSOC);
+    //echo"<pre>";
+    //var_dump($member);
+    //echo"</pre>";
+    if($member == false){
+      //認証失敗
+    $error["login"] = "failed";
+    }else{
+      //認証成功
+
+      //ログイン後の画面に移動
+      header("Location: index.php");
+      exit();
+    }
+
+  } catch (Exception $e) {
+    
+  }
+
+}
+
+
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="ja">
   <head>
