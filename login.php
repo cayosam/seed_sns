@@ -10,7 +10,7 @@ if(isset($_COOKIE["email"]) && !empty($_COOKIE["email"])){
 }
 
 
-//DB接続する(５業おまとめ、同じ階層にdbconnectがあるため../が不要)
+//DB接続する(５行おまとめ、同じ階層にdbconnectがあるため../が不要)
 require('dbconnect.php');
 
 //POST送信されていたら
