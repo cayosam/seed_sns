@@ -1,5 +1,9 @@
 <?php
   session_start();//セッション変数を使用するときは必ず必要、必ず一番上に記述
+
+  //DB接続する(５行おまとめ、同じ階層にdbconnectがあるため../が不要)
+  require('dbconnect.php');
+
   //ログインチェック
   if(isset($_SESSION['id'])){
       //$_SESSION['id']が存在している＝ログインしている
@@ -11,6 +15,26 @@
     exit();
   }
 
+
+  //---------------------表示用のデータ取得---------------------
+
+if(isset($_SESSION['id'])){
+
+  try{
+    //ログインしている人の情報を取得
+    $sql = "SELECT * FROM `members` WHERE `member_id`=".$_SESSION["id"]; 
+
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute();
+
+    $login_menber = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+
+  }catch(Exception $e){
+
+  }
+}
 
 
 ?>
@@ -60,7 +84,7 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
-        <legend>ようこそ●●さん！</legend>
+        <legend>ようこそ<?php echo $login_menber["nick_name"];?>さん！</legend>
         <form method="post" action="" class="form-horizontal" role="form">
             <!-- つぶやき -->
             <div class="form-group">
