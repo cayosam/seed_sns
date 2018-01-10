@@ -16,6 +16,41 @@
   }
 
 
+  //---------------------つぶやき用-------------------------
+
+//つぶやき入力後、つぶやくボタンが押されたときつぶやきをtweetsテーブルにINSERTしましょう！
+//tweet=つぶやいた内容
+//member_id=ログインした人のid
+//reply_tweet_id=-1
+//created=現在日時（now()を使用）
+//modified=現在日時（now()を使用）
+  if (isset($_POST) && !empty($_POST)) {
+
+//    if ($_POST["tweet"] == ''){
+//      $error["tweet"] = 'blank';
+//    }
+
+    $tweet = $_POST['tweet'];
+    $member_id = $_SESSION['id'];
+    $reply_tweet_id = -1;
+
+try{
+
+  $sql = "INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`, `created`, `modified`) VALUES (?,?,?,now(),now())";
+
+    $data = array($tweet,$member_id,$reply_tweet_id);
+
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+
+  }catch(Exception $e){
+
+  }
+}
+
+
+
+
   //---------------------表示用のデータ取得---------------------
 
 if(isset($_SESSION['id'])){
@@ -29,13 +64,10 @@ if(isset($_SESSION['id'])){
 
     $login_menber = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
-
   }catch(Exception $e){
 
   }
 }
-
 
 ?>
 

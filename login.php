@@ -23,6 +23,7 @@ if (isset($_POST) && !empty($_POST)){
     $sql = "SELECT * FROM `members` WHERE `email`=? AND `password`=?";
 
     //SQL文実行
+    //shl1 暗号化を行う関数の一つ
     //パスワードは、入力されてものを暗号化した上で使用する
     $data = array($_POST["email"],sha1($_POST["password"]));
     $stmt = $dbh->prepare($sql);

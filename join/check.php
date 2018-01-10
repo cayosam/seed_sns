@@ -18,9 +18,9 @@
 
 
     try {
-    //DBに会員情報を登録するSQL文を作成(三行の決まり文句t+$data)
+    //DBに会員情報を登録するSQL文を作成(三行の決まり文句+$data)
     //下記の$sql文はphpMyAdminのSQL>INSERTからコビペして修正して使用
-    //noe() とはMySQLが用意してくれている関数。現在日時を取得できる
+    //now() とはMySQLが用意してくれている関数。現在日時を取得できる
     $sql = "INSERT INTO `members`(`nick_name`, `email`, `password`, `picture_path`, `created`, `modified`) VALUES (?,?,?,?,now(),now())";
     //SQL文実行
     //shl1 暗号化を行う関数の一つ
@@ -30,7 +30,7 @@
     $stmt->execute($data);
 
     //$_SESSIONの情報を削除
-    //unset 指定した変数を削除するという意味。SESSIOMじゃなくても使える。
+    //unset 指定した変数を削除するという意味。SESSIONじゃなくても使える。
     unset($_SESSION["join"]);
 
     //thanks.php へ遷移
