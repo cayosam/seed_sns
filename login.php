@@ -39,10 +39,10 @@ if (isset($_POST) && !empty($_POST)){
     }else{
       //認証成功
       //1.セッション変数に会員のidを保存
-      $_SSESION["id"] = $member["member_id"];
+      $_SESSION["id"] = $member["member_id"];
 
       //2.ログインした時間をセッションの変数に保存
-      $_SSESION["time"] = time();
+      $_SESSION["time"] = time();
 
       //3.自動ログインの処理
       if($_POST["save"] == "on"){

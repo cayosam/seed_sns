@@ -1,3 +1,21 @@
+<?php
+  session_start();//セッション変数を使用するときは必ず必要、必ず一番上に記述
+  //ログインチェック
+  if(isset($_SESSION['id'])){
+      //$_SESSION['id']が存在している＝ログインしている
+
+  }else{
+    //ログインしていない
+    //ログイン画面に移動する
+    header("Location: login.php");
+    exit();
+  }
+
+
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -31,7 +49,7 @@
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="logout.html">ログアウト</a></li>
+                <li><a href="logout.php">ログアウト</a></li>
               </ul>
           </div>
           <!-- /.navbar-collapse -->
