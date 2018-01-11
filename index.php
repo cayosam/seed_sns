@@ -16,38 +16,37 @@
   }
 
 
-  //---------------------つぶやき用-------------------------
+  //-----------------POST送信された時、つぶやきをINSERTで保存-------------------------
+//$_POST["tweet"] => "" $_POST　空だと認識されていない
+//$_POST["tweet"] => "" $_POST["tweet"]　空だと認識される
 
-//つぶやき入力後、つぶやくボタンが押されたときつぶやきをtweetsテーブルにINSERTしましょう！
-//tweet=つぶやいた内容
-//member_id=ログインした人のid
-//reply_tweet_id=-1
-//created=現在日時（now()を使用）
-//modified=現在日時（now()を使用）
   if (isset($_POST) && !empty($_POST)) {
 
-//    if ($_POST["tweet"] == ''){
-//      $error["tweet"] = 'blank';
-//    }
+     if ($_POST["tweet"] == ""){
+        $error["tweet"] = "blank";
+       }
 
-    $tweet = $_POST['tweet'];
-    $member_id = $_SESSION['id'];
-    $reply_tweet_id = -1;
+  if (!isset($error)){
 
-try{
-
-  $sql = "INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`, `created`, `modified`) VALUES (?,?,?,now(),now())";
-
-    $data = array($tweet,$member_id,$reply_tweet_id);
+//SQL文作成
+//tweet=つぶやいた内容
+//member_id=ログインした人のid
+//reply_tweet_id=-1(→変更予定返信されたものに対してid)
+//created=現在日時（now()を使用）
+//modified=現在日時（now()を使用）（→なくてもいい。セットしなくても現在日時が自動で入るtimestampという設定になる）
+  $sql = "INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`, `created`)
+         VALUES (?,?,?,now())";
+//SQL文実行
+    $data = array($_POST["tweet"],$_SESSION["id"],-1);
 
     $stmt = $dbh->prepare($sql);
     $stmt->execute($data);
 
-  }catch(Exception $e){
+     //自分の画面に移動する（データの再送信を防止する）
+    header("Location; index.php");
 
   }
 }
-
 
 
 
@@ -62,7 +61,36 @@ if(isset($_SESSION['id'])){
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
 
+         //1件数取得
     $login_menber = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    //一覧用のデータを取得
+    //テーブル結合
+    $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
+            FROM `tweets`
+            INNER JOIN `members` 
+            ON `tweets`.`member_id` = `members`.`member_id`
+            ORDER BY `tweets`.`modified` DESC";
+            //ORDER BY `tweets`.`modified` DESCは最新順の並べ替え
+
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute();
+
+
+    //一覧表示用の配列を用意
+    $tweet_list = array();
+    //複数行データを取得するためループ
+    while(1){
+        $one_tweet = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($one_tweet == false){
+          break;
+        }else{
+          //データが取得できている
+          $tweet_list[] = $one_tweet;
+        }
+}
+
 
   }catch(Exception $e){
 
@@ -123,6 +151,10 @@ if(isset($_SESSION['id'])){
               <label class="col-sm-4 control-label">つぶやき</label>
               <div class="col-sm-8">
                 <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"></textarea>
+                <?php if (isset($error) && ($error["tweet"] == "blank")){
+                   ?>
+                   <p class="error">何かつぶやいてください。</p>
+                <?php  } ?> 
               </div>
             </div>
           <ul class="paging">
@@ -136,62 +168,34 @@ if(isset($_SESSION['id'])){
       </div>
 
       <div class="col-md-8 content-margin-top">
+      <?php foreach ($tweet_list as $one_tweet) { ?>
+
+      <!-- 繰り返すタグが描かれる場所 -->
         <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
+          <img src="picture_path/<?php echo $one_tweet["picture_path"]; ?>" width="48" height="48">
           <p>
-            つぶやき４<span class="name"> (Seed kun) </span>
+           <?php echo $one_tweet["tweet"];?>
+            <span class="name">(<?php echo $one_tweet["nick_name"];?>)
+            </span>
             [<a href="#">Re</a>]
           </p>
           <p class="day">
-            <a href="view.html">
-              2016-01-28 18:04
+            <a href="view.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>">
+
+              <!-- echo $one_tweet["modified"];だと秒まで表示される -->
+              <?php 
+              $modefy_date = $one_tweet["modified"];
+              //strtotime 文字型のデータを日時型に変換できる
+              //(Y年m月d日 と記述することも可能)(H24時間表記、h12時間表記)
+              $modefy_date = date("Y-m-d H:i",strtotime($modefy_date));
+              echo $modefy_date;
+              ?>
             </a>
             [<a href="#" style="color: #00994C;">編集</a>]
             [<a href="#" style="color: #F33;">削除</a>]
           </p>
         </div>
-        <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p>
-            つぶやき３<span class="name"> (Seed kun) </span>
-            [<a href="#">Re</a>]
-          </p>
-          <p class="day">
-            <a href="view.html">
-              2016-01-28 18:03
-            </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
-        </div>
-        <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p>
-            つぶやき２<span class="name"> (Seed kun) </span>
-            [<a href="#">Re</a>]
-          </p>
-          <p class="day">
-            <a href="view.html">
-              2016-01-28 18:02
-            </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
-        </div>
-        <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p>
-            つぶやき１<span class="name"> (Seed kun) </span>
-            [<a href="#">Re</a>]
-          </p>
-          <p class="day">
-            <a href="view.html">
-              2016-01-28 18:01
-            </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
-        </div>
+           <?php } ?>
       </div>
 
     </div>
