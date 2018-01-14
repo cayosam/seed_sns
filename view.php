@@ -1,6 +1,8 @@
 <?php
 session_start();
   //宿題：個別ページの表示を完成させよう
+
+//DB接続
   require('dbconnect.php');
 
   //ヒント：$_GET["tweet_id"] の中に、表示したいつぶやきのtweet_idが格納されている
@@ -11,18 +13,18 @@ session_start();
     //          ON `tweets`.`member_id`=`members`.`member_id`
     //          WHERE `tweet_id`=".$_GET["tweet_id"];
     $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
-             FROM `tweets`
+            FROM `tweets`
             INNER JOIN `members` 
             ON `tweets`.`member_id` = `members`.`member_id`
-            WHERE `tweet_id`=".$_GET["tweet_id"];
+            WHERE`tweets`.`tweet_id`=".$_GET["tweet_id"];
    
 
     $stmt = $dbh->prepare($sql);
-    
     $stmt->execute();
 
   
   //ヒント２：送信されたtweet_idを使用してSQL文でデータベースからデータを一件取得
+  //個別ページに表示するデータを取得
     $tweet_pick = $stmt->fetch(PDO::FETCH_ASSOC);
 
 //    $dbh = null;

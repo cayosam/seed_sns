@@ -33,7 +33,7 @@
 //member_id=ログインした人のid
 //reply_tweet_id=-1(→変更予定返信されたものに対してid)
 //created=現在日時（now()を使用）
-//modified=現在日時（now()を使用）（→なくてもいい。セットしなくても現在日時が自動で入るtimestampという設定になる）
+//modified=現在日時（now()を使用）（→なくてもいい。現在日時が自動で入るtimestampという設定になっている）
   $sql = "INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`, `created`)
          VALUES (?,?,?,now())";
 //SQL文実行
@@ -56,7 +56,9 @@ if(isset($_SESSION['id'])){
 
   try{
     //ログインしている人の情報を取得
-    $sql = "SELECT * FROM `members` WHERE `member_id`=".$_SESSION["id"]; 
+    $sql = "SELECT *
+            FROM `members`
+            WHERE `member_id`=".$_SESSION["id"]; 
 
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
@@ -89,10 +91,8 @@ if(isset($_SESSION['id'])){
           //データが取得できている
           $tweet_list[] = $one_tweet;
         }
-}
-
-
-  }catch(Exception $e){
+      }
+    }catch(Exception $e){
 
   }
 }
