@@ -1,19 +1,25 @@
 <?php
   session_start();//セッション変数を使用するときは必ず必要、必ず一番上に記述
 
+  require('function.php');
+
+  //ログインチェック(function.phpから呼び出し)
+  login_check();
+
   //DB接続する(５行おまとめ、同じ階層にdbconnectがあるため../が不要)
   require('dbconnect.php');
 
-  //ログインチェック
-  if(isset($_SESSION['id'])){
-      //$_SESSION['id']が存在している＝ログインしている
 
-  }else{
-    //ログインしていない
-    //ログイン画面に移動する
-    header("Location: login.php");
-    exit();
-  }
+//  //ログインチェック
+//  if(isset($_SESSION['id'])){
+//      //$_SESSION['id']が存在している＝ログインしている
+//
+//  }else{
+//    //ログインしていない
+//    //ログイン画面に移動する
+//    header("Location: login.php");
+//    exit();
+//  }
 
 
   //-----------------POST送信された時、つぶやきをINSERTで保存-------------------------
@@ -21,6 +27,8 @@
 //$_POST["tweet"] => "" $_POST["tweet"]　空だと認識される
 
   if (isset($_POST) && !empty($_POST)) {
+
+    // var_dump("postされてる");
 
      if ($_POST["tweet"] == ""){
         $error["tweet"] = "blank";
@@ -43,7 +51,7 @@
     $stmt->execute($data);
 
      //自分の画面に移動する（データの再送信を防止する）
-    header("Location; index.php");
+    header("Location: index.php");
 
   }
 }
@@ -68,10 +76,12 @@ if(isset($_SESSION['id'])){
 
     //一覧用のデータを取得
     //テーブル結合
+    //論理削除に対応 delete_flag = 0 のものだけを取得(0は表示させ、1は論理削除で非表示にさせる)
     $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
             FROM `tweets`
             INNER JOIN `members` 
             ON `tweets`.`member_id` = `members`.`member_id`
+            WHERE `delete_flag`= 0
             ORDER BY `tweets`.`modified` DESC";
             //ORDER BY `tweets`.`modified` DESCは最新順の並べ替え
 
@@ -180,6 +190,7 @@ if(isset($_SESSION['id'])){
             [<a href="#">Re</a>]
           </p>
           <p class="day">
+            <!-- tweet_id何番かで判断する -->
             <a href="view.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>">
 
               <!-- echo $one_tweet["modified"];だと秒まで表示される -->
@@ -192,7 +203,7 @@ if(isset($_SESSION['id'])){
               ?>
             </a>
             [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
+            [<a onclick="return confirm('削除します、よろしいですか？');" href="delete.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>" style="color: #F33;">削除</a>]
           </p>
         </div>
            <?php } ?>

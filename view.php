@@ -1,6 +1,10 @@
 <?php
 session_start();
   //宿題：個別ページの表示を完成させよう
+  require('function.php');
+
+  //ログインチェック(function.phpから呼び出し)
+  login_check();
 
 //DB接続
   require('dbconnect.php');
@@ -17,7 +21,6 @@ session_start();
             INNER JOIN `members` 
             ON `tweets`.`member_id` = `members`.`member_id`
             WHERE`tweets`.`tweet_id`=".$_GET["tweet_id"];
-   
 
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
