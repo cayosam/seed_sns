@@ -98,6 +98,46 @@ if(isset($_SESSION['id'])){
         if($one_tweet == false){
           break;
         }else{
+          //Like数を求めるSQL文(上部で$sqlを使用しているので、名前を変更して$like_〇〇にしている)
+          $like_sql = "SELECT COUNT(*) AS `like_count`
+                       FROM `likes`
+                       WHERE `tweet_id`=".$one_tweet["tweet_id"];
+
+          //SQL文実行
+          $like_stmt = $dbh->prepare($like_sql);
+          $like_stmt->execute();
+
+          //$like_munberにlike数がいくつかカウントしている
+          $like_member = $like_stmt->fetch(PDO::FETCH_ASSOC);
+
+          //$one_tweetの中身
+          //$one_tweet["tweet"]つぶやき
+          //$one_tweet["member_id"]つぶやいた人のid
+          //$one_tweet["nick_name"]つぶやいた人のニックネーム
+          //$one_tweet["picture_path"]つぶやいた人のプロフィール画像
+          //$one_tweet["mofrfied"]つぶやいた日時
+          //上記の内容に加え、$one_tweet["like_count"]を加えてまとめている。
+          //1行文おデータに新しいキーを用意して、like数を代入
+          $one_tweet["like_count"] = $like_member["like_count"];
+
+
+          //ログインしている人がlikeしているかどうかの情報を取得する
+          $login_like_sql = "SELECT COUNT(*) AS `like_count`
+                             FROM `likes`
+                             WHERE `tweet_id`=".$one_tweet["tweet_id"]."
+                             AND `member_id`=".$_SESSION["id"];
+
+          //SQL文実行(今ログインしている人がlikeしているかどうかのデータ)
+          $login_like_stmt = $dbh->prepare($login_like_sql);
+          $login_like_stmt->execute();
+
+          //フェッチして取得
+          $login_like_number = $login_like_stmt->fetch(PDO::FETCH_ASSOC);
+
+          $one_tweet["login_like_flag"] = $login_like_number["like_count"];
+          //ログインしているか、していないか、などの二択の場合はflagを使う
+          //0の時likeボタン　1の時unlikeのボタン
+
           //データが取得できている
           $tweet_list[] = $one_tweet;
         }
@@ -188,6 +228,12 @@ if(isset($_SESSION['id'])){
             <span class="name">(<?php echo $one_tweet["nick_name"];?>)
             </span>
             [<a href="#">Re</a>]
+              <?php if($one_tweet["login_like_flag"] == 0){?>
+            　<a href="#"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>Like</a> 
+            <?php }else{ ?>
+            <a href="#"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>UnLike</a> 
+            <?php } ?>
+             <?php if($one_tweet["like_count"] > 0){ echo $one_tweet["like_count"];} ?>
           </p>
           <p class="day">
             <!-- tweet_id何番かで判断する -->
