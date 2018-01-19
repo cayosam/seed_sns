@@ -8,6 +8,41 @@
 
 //DB接続
   require('dbconnect.php');
+//--------------POST送信された時、つぶやきをINSERTで保存-----------------
+//$_POST["tweet"] => "" $_POST　空だと認識されていない
+//$_POST["tweet"] => "" $_POST["tweet"]　空だと認識される
+
+  if (isset($_POST) && !empty($_POST)) {
+
+    // var_dump("postされてる");
+
+     if ($_POST["tweet"] == ""){
+        $error["tweet"] = "blank";
+       }
+
+  if (!isset($error)){
+
+//SQL文作成
+//tweet=つぶやいた内容
+//member_id=ログインした人のid
+//reply_tweet_id=返信元のtweet_id
+//created=現在日時（now()を使用）
+//modified=現在日時（now()を使用）（→なくてもいい。現在日時が自動で入るtimestampという設定になっている）
+  $sql = "INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`, `created`)
+         VALUES (?,?,?,now())";
+//SQL文実行
+    $data = array($_POST["tweet"],$_SESSION["id"],$_GET["tweet_id"]);
+
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+
+     //一覧ページ画面に移動する
+    header("Location: index.php");
+
+  }
+}
+
+
 
   //ヒント：$_GET["tweet_id"] の中に、表示したいつぶやきのtweet_idが格納されている
 
@@ -29,6 +64,9 @@
   //ヒント２：送信されたtweet_idを使用してSQL文でデータベースからデータを一件取得
   //個別ページに表示するデータを取得
     $tweet_pick = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $reply_msg = "@".$tweet_pick["tweet"]."(".$tweet_pick["nick_name"].")";
+
 
 //    $dbh = null;
 
@@ -78,24 +116,26 @@
 
   <div class="container">
     <div class="row">
-      <div class="col-md-4 col-md-offset-4 content-margin-top">
+      <div class="col-md-6 col-md-offset-3 content-margin-top">
+        <h4>つぶやきに返信しましょう</h4>
+
         <div class="msg">
-          <img src="picture_path/<?php echo $tweet_pick["picture_path"]; ?>" width="100" height="100">
-          <p>投稿者 : <span class="name"> <?php echo $tweet_pick["nick_name"]; ?> </span></p>
-          <p>
-            つぶやき : <br>
-            <?php echo $tweet_pick["tweet"];?>
-          </p>
-          <p class="day">
-              <?php 
-              $modefy_date = $tweet_pick["modified"];
-              //strtotime 文字型のデータを日時型に変換できる
-              //(Y年m月d日 と記述することも可能)(H24時間表記、h12時間表記)
-              $modefy_date = date("Y-m-d H:i",strtotime($modefy_date));
-              echo $modefy_date;
-              ?>
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
+          <form method="post" action="" class="form-horizontal" role="form">
+            <!-- つぶやき -->
+            <div class="form-group">
+              <label class="col-sm-4 control-label">つぶやきに返信</label>
+              <div class="col-sm-8">
+                <!--textareaで改行すると画面でもそのまま改行されてしまう  -->
+                <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"><?php echo $reply_msg; ?></textarea>
+                <?php if (isset($error) && ($error["tweet"] == "blank")){
+                   ?>
+                   <p class="error">何かつぶやいてください。</p>
+                <?php  } ?> 
+              </div>
+            </div>
+          <ul class="paging">
+            <input type="submit" class="btn btn-info" value="返信としてつぶやく">
+        </form>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>

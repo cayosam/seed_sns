@@ -1,5 +1,5 @@
 <?php
-require ("function .php");
+require ("function.php");
 
 //ログインチェック
 login_check();

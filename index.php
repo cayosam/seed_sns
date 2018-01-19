@@ -1,5 +1,5 @@
 <?php
-  session_start();//セッション変数を使用するときは必ず必要、必ず一番上に記述
+  // session_start();//セッション変数を使用するときは必ず必要、必ず一番上に記述
 
   require('function.php');
 
@@ -21,8 +21,7 @@
 //    exit();
 //  }
 
-
-  //-----------------POST送信された時、つぶやきをINSERTで保存-------------------------
+//-----------------POST送信された時、つぶやきをINSERTで保存-------------------------
 //$_POST["tweet"] => "" $_POST　空だと認識されていない
 //$_POST["tweet"] => "" $_POST["tweet"]　空だと認識される
 
@@ -55,6 +54,43 @@
 
   }
 }
+// ------ ページング処理（表示用データのSQL文を使用のため、その上に記述する） -----
+  $page = "";
+
+  //パラメータが存在していたらページ番号を代入
+  if(isset($_GET["page"])){
+     $page = $_GET["page"];
+  }else{
+    //存在しないときはページ番号を１とする
+    $page = 1;
+  }
+
+      //1以下のイレギュラーな数字が入ってきた時、ページ番号を強制的に1とする
+      //max カンマ区切りで羅列された数字の中から最大の数字を取得
+      $page = max($page,1);
+
+      //iページ分の表示件数
+      $page_row = 5;
+
+     //データの件数から最大件数を計算する
+      $sql = "SELECT COUNT(*) AS `cnt`
+              FROM `tweets`
+              WHERE `delete_flag` = 0";
+
+      $page_stmt = $dbh->prepare($sql);
+      $page_stmt ->execute();
+
+      $record_count = $page_stmt->fetch(PDO::FETCH_ASSOC);
+
+      //ceil 小数点の切り上げを行う
+      $all_page_number = ceil($record_count['cnt'] / $page_row);
+
+      //パラメータのページ番号が最大ページを超えて入れば、強制的に最後のページとする
+      //min カンマ区切りの数字の羅列の中から、最小の数字を取得する
+      $page = min($page,$all_page_number);
+      //表示するデータの取得開始場所
+      $start = ($page -1) * $page_row;
+// -------------------------------------------------------------
 
 
 
@@ -77,12 +113,15 @@ if(isset($_SESSION['id'])){
     //一覧用のデータを取得
     //テーブル結合
     //論理削除に対応 delete_flag = 0 のものだけを取得(0は表示させ、1は論理削除で非表示にさせる)
+    //ORDER BY `tweets`.`modified` DESCは最新順の並べ替え
+    //LIMIT 0,5→ ０番目からデータを取り出す、５件のデータを取り出す→0-4番目のデータが表示される
     $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
             FROM `tweets`
             INNER JOIN `members` 
             ON `tweets`.`member_id` = `members`.`member_id`
             WHERE `delete_flag`= 0
-            ORDER BY `tweets`.`modified` DESC";
+            ORDER BY `tweets`.`modified` DESC
+            LIMIT ".$start.",".$page_row;
             //ORDER BY `tweets`.`modified` DESCは最新順の並べ替え
 
     $stmt = $dbh->prepare($sql);
@@ -147,6 +186,7 @@ if(isset($_SESSION['id'])){
   }
 }
 
+
 ?>
 
 
@@ -210,9 +250,18 @@ if(isset($_SESSION['id'])){
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">前</a></li>
+                <?php if($page == 1){ ?>
+                <li>前</li>
+                <?php }else{ ?>
+                <li><a href="index.php?page=<?php echo $page - 1; ?>" class="btn btn-default">前</a></li>
+                <?php } ?>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">次</a></li>
+                <?php if($page == $all_page_number){ ?>
+                <li>次</li>
+                <?php }else{ ?>
+                <li><a href="index.php?page=<?php echo $page + 1; ?>" class="btn btn-default">次</a></li>
+                <li><?php echo $page; ?> / <?php echo $all_page_number; ?>Page</li>
+              <?php } ?>
           </ul>
         </form>
       </div>
@@ -227,11 +276,11 @@ if(isset($_SESSION['id'])){
            <?php echo $one_tweet["tweet"];?>
             <span class="name">(<?php echo $one_tweet["nick_name"];?>)
             </span>
-            [<a href="#">Re</a>]
+            [<a href="reply.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>">Re</a>]
               <?php if($one_tweet["login_like_flag"] == 0){?>
-            　<a href="#"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>Like</a> 
+             <a href="like.php?like_tweet_id=<?php echo $one_tweet["tweet_id"]; ?>"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>Like</a> 
             <?php }else{ ?>
-            <a href="#"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>UnLike</a> 
+            <a href="like.php?unlike_tweet_id=<?php echo $one_tweet["tweet_id"]; ?>"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>UnLike</a> 
             <?php } ?>
              <?php if($one_tweet["like_count"] > 0){ echo $one_tweet["like_count"];} ?>
           </p>
@@ -248,8 +297,14 @@ if(isset($_SESSION['id'])){
               echo $modefy_date;
               ?>
             </a>
+            <?php if($_SESSION["id"] == $one_tweet["member_id"]){ ?>
             [<a href="#" style="color: #00994C;">編集</a>]
             [<a onclick="return confirm('削除します、よろしいですか？');" href="delete.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>" style="color: #F33;">削除</a>]
+            <?php } ?>
+            <?php if($one_tweet["reply_tweet_id"] > 0){ ?>
+            [<a href="view.php?tweet_id=<?php echo $one_tweet["reply_tweet_id"]; ?>" style="color: #a9a9a9;">返信元のメッセージを表示</a>]
+            <?php } ?>
+
           </p>
         </div>
            <?php } ?>

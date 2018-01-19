@@ -1,5 +1,5 @@
 <?php
-
+session_start();
 //ログインチェックを行う関数
 //関数とは、一定の処理をまとめて名前をつけておいているプログラムの塊
 //何度も同じ処理を実行したい場合、便利である。
@@ -22,16 +22,16 @@ function login_check(){
 }
 
 function delete_tweet(){
+  //論理削除用のUPDATE文(DB接続が必要)
+   require('dbconnect.php');
 
      $delete_tweet_id = $_GET['tweet_id'];
 
 
-  //論理削除用のUPDATE文(DB接続が必要)
-   require('dbconnect.php');
 
-   $sql = "UPDATE `tweets` 
+   $sql = "UPDATE `tweets`
            SET `delete_flag` = '1'
-         WHERE `tweets`.`tweet_id` = ".$delete_tweet_id;
+           WHERE `tweets`.`tweet_id` = ".$delete_tweet_id;
 
   // SQL文実行
     $stmt = $dbh->prepare($sql);
