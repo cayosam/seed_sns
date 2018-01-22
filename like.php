@@ -9,7 +9,7 @@
      if(isset($_GET["like_tweet_id"])){
       //like情報をlikesテーブルに登録
       //下記は関数の呼び出しを行うことで処理が可能。書いただけでは実行されない。
-      like($_GET["like_tweet_id"],$_SESSION["id"]);
+      like($_GET["like_tweet_id"],$_SESSION["id"],$_GET["page"]);
       //$sql = "INSERT INTO `likes`(`tweet_id`, `member_id`)
       //        VALUES (".$_GET["like_tweet_id"].",".$_SESSION["id"].");";
 
@@ -24,7 +24,7 @@
     //unlikeボタンが押された時
      if(isset($_GET["unlike_tweet_id"])){
       //登録されているlike情報をlikesテーブルから削除
-      unlike($_GET["unlike_tweet_id"],$_SESSION["id"]);
+      unlike($_GET["unlike_tweet_id"],$_SESSION["id"],$_GET["page"]);
       // $sql = "DELETE FROM `likes`
       //         WHERE tweet_id=".$_GET["unlike_tweet_id"]." AND member_id=".$_SESSION["id"];
 
@@ -38,8 +38,8 @@
         }
 
         //like関数
-        //引数 like_tweet_id,login_member_id
-        function like($like_tweet_id,$login_member_id){
+        //引数 like_tweet_id,login_member_id,$page
+        function like($like_tweet_id,$login_member_id,$page){
           //DB接続は関数内で行う必要がある
           require('dbconnect.php');
 
@@ -51,11 +51,11 @@
           $stmt->execute();
 
           //一覧ページに戻る
-          header("Location: index.php");
+          header("Location: index.php?page=".$page);
           }
 
         //unlike関数
-        function unlike($unlike_tweet_id,$login_member_id){
+        function unlike($unlike_tweet_id,$login_member_id,$page){
           //DB接続は関数内で行う必要がある
           require('dbconnect.php');
 
@@ -67,7 +67,7 @@
           $stmt->execute();
 
           //一覧ページに戻る
-          header("Location: index.php");
+          header("Location: index.php?page=".$page);
           }
 
   ?>
