@@ -1,59 +1,66 @@
 <?php
-  // session_start();//セッション変数を使用するときは必ず必要、必ず一番上に記述
+  session_start();
 
-  require('function.php');
-
-  //ログインチェック(function.phpから呼び出し)
-  login_check();
-
-  //DB接続する(５行おまとめ、同じ階層にdbconnectがあるため../が不要)
+  //DB接続
   require('dbconnect.php');
 
-
-//  //ログインチェック
-//  if(isset($_SESSION['id'])){
-//      //$_SESSION['id']が存在している＝ログインしている
-//
-//  }else{
-//    //ログインしていない
-//    //ログイン画面に移動する
-//    header("Location: login.php");
-//    exit();
-//  }
-
-//-----------------POST送信された時、つぶやきをINSERTで保存-------------------------
-//$_POST["tweet"] => "" $_POST　空だと認識されていない
-//$_POST["tweet"] => "" $_POST["tweet"]　空だと認識される
-
-  if (isset($_POST) && !empty($_POST)) {
-
-    // var_dump("postされてる");
-
-     if ($_POST["tweet"] == ""){
-        $error["tweet"] = "blank";
-       }
-
-  if (!isset($error)){
-
-//SQL文作成
-//tweet=つぶやいた内容
-//member_id=ログインした人のid
-//reply_tweet_id=-1(→変更予定返信されたものに対してid)
-//created=現在日時（now()を使用）
-//modified=現在日時（now()を使用）（→なくてもいい。現在日時が自動で入るtimestampという設定になっている）
-  $sql = "INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`, `created`)
-         VALUES (?,?,?,now())";
-//SQL文実行
-    $data = array($_POST["tweet"],$_SESSION["id"],-1);
+  //GET送信された、member_idを使って、プロフィール情報をmembersテーブルから取得
+    $sql = "SELECT *
+            FROM `members`
+            WHERE `member_id`=".$_GET["member_id"]; 
 
     $stmt = $dbh->prepare($sql);
-    $stmt->execute($data);
+    $stmt->execute();
+
+         //1件数取得
+    $profile_member = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      //一覧データを取得
+    $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
+            FROM `tweets`
+            INNER JOIN `members` 
+            ON `tweets`.`member_id` = `members`.`member_id`
+            WHERE `delete_flag`= 0
+            AND `tweets`.`member_id`=".$_GET["member_id"]."
+            ORDER BY `tweets`.`modified` DESC ";
+
+        $nstmt = $dbh->prepare($sql);
+        $nstmt->execute();
+       
+       // 一覧表示用の配列を用意
+        $tweet_list = array();
+       // 複数行データを取得するためループ
+        while(1){
+          $one_tweet = $nstmt->fetch(PDO::FETCH_ASSOC);
+
+          if($one_tweet == false){
+            break;
+          }else{
+            // データ取得できている
+            $tweet_list[] = $one_tweet;
+          }
+        }
+
+    //フォロー処理
+    //profile.php?follow_id=5 というリンクが押された=フォローボタンが押された
+    //下記のfollow_id　はフォローされようとしている人のid
+    if(isset($_GET["follow_id"])){
+      //follow情報を記録するSQL文を作成
+        $sql = "INSERT INTO `follows` (`member_id`, `follower_id`)
+                VALUES (?, ?);";
+
+        //上記のSQL文で?を使用している数と同じ数だけ配列に入れる
+        //今ログインしている人のログインidとフォローされようとしている人のid
+        $data = array($_SESSION["id"],$_GET["follow_id"]);
+
+        $fl_stmt = $dbh->prepare($sql);
+        $fl_stmt->execute($data);
 
      //自分の画面に移動する（データの再送信を防止する）
-    header("Location: index.php");
+    //header("Location: index.php");
 
-  }
-}
+    }
+
 // ------ ページング処理（表示用データのSQL文を使用のため、その上に記述する） -----
   $page = "";
 
@@ -253,40 +260,43 @@ if(isset($_SESSION['id'])){
 
   <div class="container">
     <div class="row">
-      <div class="col-md-4 content-margin-top">
-        <legend>ようこそ<?php echo $login_menber["nick_name"];?>さん！</legend>
+      <div class="col-md-3 content-margin-top">
         <form method="post" action="" class="form-horizontal" role="form">
-            <!-- つぶやき -->
-            <div class="form-group">
-              <label class="col-sm-4 control-label">つぶやき</label>
-              <div class="col-sm-8">
-                <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"></textarea>
-                <?php if (isset($error) && ($error["tweet"] == "blank")){
-                   ?>
-                   <p class="error">何かつぶやいてください。</p>
-                <?php  } ?> 
-              </div>
-            </div>
-          <ul class="paging">
-            <input type="submit" class="btn btn-info" value="つぶやく">
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <?php if($page == 1){ ?>
-                <li>前</li>
-                <?php }else{ ?>
-                <li><a href="index.php?page=<?php echo $page - 1; ?>" class="btn btn-default">前</a></li>
-                <?php } ?>
-                &nbsp;&nbsp;|&nbsp;&nbsp;
-                <?php if($page == $all_page_number){ ?>
-                <li>次</li>
-                <?php }else{ ?>
-                <li><a href="index.php?page=<?php echo $page + 1; ?>" class="btn btn-default">次</a></li>
-                <li><?php echo $page; ?> / <?php echo $all_page_number; ?>Page</li>
-              <?php } ?>
-          </ul>
-        </form>
-      </div>
 
-      <div class="col-md-8 content-margin-top">
+        <img src="picture_path/<?php echo $profile_member["picture_path"]; ?>" width="250" height="250">
+        <h3><?php echo $profile_member["nick_name"]; ?>さん</h3>
+        <?php if($_SESSION["id"] != $profile_member["member_id"]){ ?>
+
+        <a href="profile.php?member_id=<?php echo $profile_member["member_id"]; ?>&follow_id=<?php echo $profile_member["member_id"]; ?>">
+        <button class="btn btn-block btn-default">フォロー</button>
+        </a>
+
+        <?php } ?>
+        <br>
+        <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
+
+        <div class="form-group">
+        <ul class="paging">
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <?php if($page == 1){ ?>
+              <li>前</li>
+              <?php }else{ ?>
+              <li><a href="profile.php?page=<?php echo $page - 1; ?>" class="btbtn-default">前</a></li>
+              <?php } ?>
+              &nbsp;&nbsp;|&nbsp;&nbsp;
+              <?php if($page == $all_page_number){ ?>
+              <li>次</li>
+              <?php }else{ ?>
+              <li><a href="profile.php?page=<?php echo $page + 1; ?>" class="btbtn-default">次</a></li>
+              <li><?php echo $page; ?> / <?php echo $all_page_number; ?>Page</li>
+            <?php } ?>
+        </ul>
+        </form>
+       </div>
+      </div>
+    
+
+      <div class="col-md-9 content-margin-top">
       <div class="msg_header">
         <a href="#">Followers<span class="badge badge-pill badge-default"><?php echo $follower["cnt"]; ?></span></a><a href="#">Following<span class="badge badge-pill badge-default"><?php echo $following["cnt"]; ?></span></a>
       </div>
@@ -295,21 +305,13 @@ if(isset($_SESSION['id'])){
 
       <!-- 繰り返すタグが描かれる場所 -->
         <div class="msg">
-
         <a href="profile.php?member_id=<?php echo $one_tweet["member_id"]; ?>">
-          <img src="picture_path/<?php echo $one_tweet["picture_path"]; ?>" width="48" height="48"></a>
-
+          <img src="picture_path/<?php echo $one_tweet["picture_path"]; ?>" width="100" height="100"></a>
+          <p>投稿者 :  <span class="name"><?php echo $one_tweet["nick_name"]; ?></span></p>
           <p>
-           <?php echo $one_tweet["tweet"];?>
-            <span class="name">(<?php echo $one_tweet["nick_name"];?>)
-            </span>
-            [<a href="reply.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>">Re</a>]
-              <?php if($one_tweet["login_like_flag"] == 0){?>
-             <a href="like.php?like_tweet_id=<?php echo $one_tweet["tweet_id"]; ?>&page=<?php echo $page; ?>"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>Like</a> 
-            <?php }else{ ?>
-            <a href="like.php?unlike_tweet_id=<?php echo $one_tweet["tweet_id"]; ?>&page=<?php echo $page; ?>"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>UnLike</a> 
-            <?php } ?>
-             <?php if($one_tweet["like_count"] > 0){ echo $one_tweet["like_count"];} ?>
+            つぶやき : <br>
+            <?php echo $one_tweet["tweet"];?>
+
           </p>
           <p class="day">
             <!-- tweet_id何番かで判断する -->
@@ -323,20 +325,21 @@ if(isset($_SESSION['id'])){
               $modefy_date = date("Y-m-d H:i",strtotime($modefy_date));
               echo $modefy_date;
               ?>
-            </a>
-            <?php if($_SESSION["id"] == $one_tweet["member_id"]){ ?>
-            [<a href="edit.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>" style="color: #00994C;">編集</a>]
-            [<a onclick="return confirm('削除します、よろしいですか？');" href="delete.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>" style="color: #F33;">削除</a>]
-            <?php } ?>
-            <?php if($one_tweet["reply_tweet_id"] > 0){ ?>
-            [<a href="view.php?tweet_id=<?php echo $one_tweet["reply_tweet_id"]; ?>" style="color: #a9a9a9;">返信元のメッセージを表示</a>]
-            <?php } ?>
 
+            <?php if($_SESSION["id"] == $one_tweet["member_id"]){ ?>
+             [<a onclick="return confirm('削除します、よろしいですか？');" href="delete.php?tweet_id=<?php echo $one_tweet["tweet_id"]; ?>" style="color: #F33;">削除</a>]
+             <?php }?>
+            <!--[<a onclick="return confirm('削除します、よろしいですか？');" href="delete.php?tweet_id=<?php //echo $one_tweet["tweet_id"]; ?>" style="color: #F33;">削除</a>]
+            <?php// } ?>-->
           </p>
         </div>
-           <?php } ?>
-      </div>
 
+
+
+             <?php }?>
+          
+        
+      </div>
     </div>
   </div>
 
