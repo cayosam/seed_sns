@@ -34,6 +34,7 @@ function create_tweet_tags($relate_tweet_id,$input_tags,$dbh){
   //一番最後を見極めるためのカウンタ
   $i = 0;
   foreach ($input_tags as $tag_each) {
+    $tag_each = str_replace("#", "", "$tag_each");
     $input_tags_string .="'".$tag_each."'";
     $i++;
     //一番後ろにカンマがつかないようにする
@@ -45,8 +46,6 @@ function create_tweet_tags($relate_tweet_id,$input_tags,$dbh){
     $sql = "SELECT * FROM `tags`
             WHERE `tag`
             IN (".$input_tags_string.")";
-
-
 
     //SQL実行
     $stmt = $dbh->prepare($sql);

@@ -56,22 +56,19 @@
     //タグ登録機能
     //タグの存在チェック（なかったらタグテーブルに保存）function exists_tag($tag,$dbh)
     //$input_tags = "#夏 #魚 #やま #山";
-    $input_tags = $_POST["hashtags"];
+    $input_tags = $_POST["hashtag"];
 
     $input_tags = explode(" #",$input_tags);
     //上記は配列のようになっていて、$input_tags = array("#夏", "魚", "やま);ということになっている
 
     foreach ($input_tags as $tag_each) {
         $input_tag = str_replace("#","",$tag_each);
+        //var_dump($input_tag);
         exists_tag($input_tag,$dbh);
     }
 
-
     //タグとつぶやきの関連付けをDBに保存
      create_tweet_tags($new_tweet_id,$input_tags,$dbh);
-
-
-
 
      //自分の画面に移動する（データの再送信を防止する）
     header("Location: index.php");
