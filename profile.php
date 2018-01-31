@@ -41,6 +41,16 @@
           }
         }
 
+      //following_flagを用意して、自分をフォローしていたら１、していなかったら０を取得
+      $fl_flag_sql = "SELECT COUNT(*) as `cnt`
+                      FROM `follows`
+                      WHERE `member_id`=".$_SESSION["id"]."
+                      AND `follower_id`=".$_GET["member_id"];
+      $fl_stmt = $dbh->prepare($fl_flag_sql);
+      $fl_stmt->execute();
+      $fl_flag = $fl_stmt->fetch(PDO::FETCH_ASSOC);
+
+
     //フォロー処理
     //profile.php?follow_id=5 というリンクが押された=フォローボタンが押された
     //下記のfollow_id　はフォローされようとしている人のid
@@ -57,7 +67,23 @@
         $fl_stmt->execute($data);
 
      //自分の画面に移動する（データの再送信を防止する）
-    //header("Location: index.php");
+       header("Location: profile.php?member_id".$_GET["member_id"]);
+
+    }
+     //フォロー解除
+     if(isset($_GET["unfollow_id"])){
+       //フォロー情報を削除するSQL文を作成
+       //member_idは自分の事、follower_idはフォロー解除したい人
+       $sql = "DELETE FROM`follows`
+               WHERE `member_id`=?
+               AND `follower_id`=?";
+
+       $data = array($_SESSION["id"],$_GET["unfollow_id"]);
+       $unfl_stmt = $dbh->prepare($sql);
+       $unfl_stmt->execute($data);
+
+       //フォロー解除を押す前の状態に戻す
+       header("Location: profile.php?member_id".$_GET["member_id"]);
 
     }
 
@@ -267,9 +293,18 @@ if(isset($_SESSION['id'])){
         <h3><?php echo $profile_member["nick_name"]; ?>さん</h3>
         <?php if($_SESSION["id"] != $profile_member["member_id"]){ ?>
 
-        <a href="profile.php?member_id=<?php echo $profile_member["member_id"]; ?>&follow_id=<?php echo $profile_member["member_id"]; ?>">
-        <button class="btn btn-block btn-default">フォロー</button>
-        </a>
+
+          <?php if($fl_flag['cnt'] == 0){ ?>
+          <a href="profile.php?member_id=<?php echo $profile_member["member_id"]; ?>&follow_id=<?php echo $profile_member["member_id"]; ?>">
+          <button class="btn btn-block btn-default">フォロー</button>
+          </a>
+          <?php }else{ ?>
+
+
+          <a href="profile.php?member_id=<?php echo $profile_member["member_id"]; ?>&unfollow_id=<?php echo $profile_member["member_id"]; ?>">
+          <button class="btn btn-block btn-default">フォロー解除</button>
+          </a>
+          <?php } ?>
 
         <?php } ?>
         <br>
@@ -333,12 +368,7 @@ if(isset($_SESSION['id'])){
             <?php// } ?>-->
           </p>
         </div>
-
-
-
              <?php }?>
-          
-        
       </div>
     </div>
   </div>

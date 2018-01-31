@@ -2,6 +2,8 @@
   // session_start();//セッション変数を使用するときは必ず必要、必ず一番上に記述
 
   require('function.php');
+  require('tag_function.php');
+
 
   //ログインチェック(function.phpから呼び出し)
   login_check();
@@ -42,12 +44,34 @@
 //created=現在日時（now()を使用）
 //modified=現在日時（now()を使用）（→なくてもいい。現在日時が自動で入るtimestampという設定になっている）
   $sql = "INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`, `created`)
-         VALUES (?,?,?,now())";
+          VALUES (?,?,?,now())";
 //SQL文実行
     $data = array($_POST["tweet"],$_SESSION["id"],-1);
-
     $stmt = $dbh->prepare($sql);
     $stmt->execute($data);
+
+    //INSERTされたつぶやきのIDを取得
+    $new_tweet_id = $dbh->lastInsertId('tweet_id');
+
+    //タグ登録機能
+    //タグの存在チェック（なかったらタグテーブルに保存）function exists_tag($tag,$dbh)
+    //$input_tags = "#夏 #魚 #やま #山";
+    $input_tags = $_POST["hashtags"];
+
+    $input_tags = explode(" #",$input_tags);
+    //上記は配列のようになっていて、$input_tags = array("#夏", "魚", "やま);ということになっている
+
+    foreach ($input_tags as $tag_each) {
+        $input_tag = str_replace("#","",$tag_each);
+        exists_tag($input_tag,$dbh);
+    }
+
+
+    //タグとつぶやきの関連付けをDBに保存
+     create_tweet_tags($new_tweet_id,$input_tags,$dbh);
+
+
+
 
      //自分の画面に移動する（データの再送信を防止する）
     header("Location: index.php");
@@ -267,6 +291,17 @@ if(isset($_SESSION['id'])){
                 <?php  } ?> 
               </div>
             </div>
+
+            <!-- タグ -->
+             <div class="form-group">
+              <label class="col-sm-4 control-label">タグ</label>
+              <div class="col-sm-8">
+                <input type="text" name="hashtag" class="form-control" placeholder="例： #Japan #Cebu ">
+              </div>
+            </div>
+
+
+
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
                 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -288,7 +323,7 @@ if(isset($_SESSION['id'])){
 
       <div class="col-md-8 content-margin-top">
       <div class="msg_header">
-        <a href="#">Followers<span class="badge badge-pill badge-default"><?php echo $follower["cnt"]; ?></span></a><a href="#">Following<span class="badge badge-pill badge-default"><?php echo $following["cnt"]; ?></span></a>
+        <a href="follow.php">Followers<span class="badge badge-pill badge-default"><?php echo $follower["cnt"]; ?></span></a><a href="follow.php">Following<span class="badge badge-pill badge-default"><?php echo $following["cnt"]; ?></span></a>
       </div>
 
       <?php foreach ($tweet_list as $one_tweet) { ?>
@@ -339,7 +374,6 @@ if(isset($_SESSION['id'])){
 
     </div>
   </div>
-
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="assets/js/jquery-3.1.1.js"></script>
     <script src="assets/js/jquery-migrate-1.4.1.js"></script>
