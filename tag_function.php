@@ -16,8 +16,10 @@ function exists_tag($tag,$dbh){
   //フェッチ
   $tag_count = $stmt->fetch(PDO::FETCH_ASSOC);
 
+var_dump($tag_count);
+
   //存在しなかったら追加
-  if($tag_count[`cnt`] == 0){
+  if($tag_count['cnt'] == 0){
       //tagsテーブルへデータ追加するSQL文追加(INSERT)
       $tag_create_sql = "INSERT INTO `tags` (`tag`)
                          VALUES (?);";
@@ -46,22 +48,25 @@ function create_tweet_tags($relate_tweet_id,$input_tags,$dbh){
     $sql = "SELECT * FROM `tags`
             WHERE `tag`
             IN (".$input_tags_string.")";
-
+// var_dump($sql);
     //SQL実行
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
 
     while(1){
       $one_tag = $stmt->fetch(PDO::FETCH_ASSOC);
+// var_dump($one_tag);
 
       if($one_tag == false){
         break;
+
+      }
         // tweet_tagsテーブルへ登録
         $create_tweet_tags_sql = "INSERT INTO `tweet_tags`(`tweet_id`,`tag_id`)
-                                   VALUES(`".$relate_tweet_id.",".$one_tag["id"]."`);";
+                                   VALUES(".$relate_tweet_id.",".$one_tag["id"].");";
         $ctt_stmt = $dbh->prepare($create_tweet_tags_sql);
         $ctt_stmt->execute();
-      }
+      
     }
 
 }

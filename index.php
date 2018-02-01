@@ -70,8 +70,9 @@
     //タグとつぶやきの関連付けをDBに保存
      create_tweet_tags($new_tweet_id,$input_tags,$dbh);
 
-     //自分の画面に移動する（データの再送信を防止する）
-    header("Location: index.php");
+
+  //自分の画面に移動する（データの再送信を防止する）
+     header("Location: index.php");
 
   }
 }
@@ -222,6 +223,22 @@ if(isset($_SESSION['id'])){
       //フォローしてくれている人の数がいくつかカウントしている
       $follower = $follower_stmt->fetch(PDO::FETCH_ASSOC);
 
+      //タグの一覧を取得
+      $tag_sql = "SELECT * FROM `tags`";
+      $tag_stmt = $dbh->prepare($tag_sql);
+      $tag_stmt->execute();
+
+      $tag_list = array();
+      while(1){
+        $one_tag = $tag_stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($one_tag == false){
+          break;
+        }
+
+        $tag_list[] = $one_tag;
+      }
+
     }catch(Exception $e){
 
   }
@@ -316,6 +333,13 @@ if(isset($_SESSION['id'])){
               <?php } ?>
           </ul>
         </form>
+
+        <ul>
+          <?php foreach ($tag_list as $tag_each) { ?>
+          <li><h5><a href="tag_search.php?tag_id=<?php echo $tag_each["id"]; ?>">#<?php echo $tag_each["tag"]; ?></a></h5></li>
+          <?php } ?>
+        </ul>
+
       </div>
 
       <div class="col-md-8 content-margin-top">
