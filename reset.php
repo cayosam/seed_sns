@@ -1,3 +1,51 @@
+<?php
+//DB接続
+require('dbconnect.php');
+
+$error = array();
+
+echo "<br>";
+echo "<br>";
+echo "<br>";
+echo "<br>";
+echo "<br>";
+var_dump($error);
+
+//POST送信されていたら
+ if(isset($_POST) && !empty($_POST)){
+  //URLの不正チェック
+  //GET送信されているcodeと、現在DBに保存されているpasswordが一致しているか確認
+  //membersテーブルから入力されたメールと合致するデータを取得
+  $sql = "SELECT * FROM `members`
+          WHERE `email` = ?";
+
+  $data = array($_POST["email"]);
+
+  //SQL実行
+  $stmt = $dbh->prepare($sql);
+  $stmt->execute($data);
+
+  //一行取得
+  $member = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if($_GET["code"] == $member["password"]){
+    //チェックOK
+    // 新しいパスワードでリセット
+    // 文字列を暗号化してUODATE
+    $update_sql = "UPDATE `members` SET `password` = ? WHERE `email`=?";
+    $update_data = array(sha1($_POST["password"]),$member["email"]);
+    //SQL文実行
+    $update_stmt = $dbh->prepare($update_sql);
+    $update_stmt->execute($update_data);
+
+    header("Location: thanksreset.php");
+  }else{
+    //不正
+    $error["url"] = "invalid";
+  }
+
+}
+?>
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -49,6 +97,9 @@
             <div class="col-sm-8">
               <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com">
             </div>
+            <?php if(isset($error["url"]) && !empty($error["url"])){?>
+            <p class="error">URLリンクが不正です。再度確認をお願いいたします。</p>
+            <?php } ?>
           </div>
           <!-- パスワード -->
           <div class="form-group">

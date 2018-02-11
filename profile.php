@@ -188,7 +188,7 @@ if(isset($_SESSION['id'])){
           //$one_tweet["picture_path"]つぶやいた人のプロフィール画像
           //$one_tweet["mofrfied"]つぶやいた日時
           //上記の内容に加え、$one_tweet["like_count"]を加えてまとめている。
-          //1行文おデータに新しいキーを用意して、like数を代入
+          //1行文をデータに新しいキーを用意して、like数を代入
           $one_tweet["like_count"] = $like_member["like_count"];
 
 

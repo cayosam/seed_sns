@@ -121,8 +121,7 @@ if(isset($_SESSION['id'])){
 
   try{
     //ログインしている人の情報を取得
-    $sql = "SELECT *
-            FROM `members`
+    $sql = "SELECT * FROM `members`
             WHERE `member_id`=".$_SESSION["id"]; 
 
     $stmt = $dbh->prepare($sql);

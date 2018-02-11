@@ -16,16 +16,12 @@
     //          INNER JOIN `members` 
     //          ON `tweets`.`member_id`=`members`.`member_id`
     //          WHERE `tweet_id`=".$_GET["tweet_id"];
-    $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
-            FROM `tweets`
-            INNER JOIN `members` 
-            ON `tweets`.`member_id` = `members`.`member_id`
-            WHERE`tweets`.`tweet_id`=".$_GET["tweet_id"];
+    $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path` FROM `tweets` INNER JOIN `members` ON `tweets`.`member_id` = `members`.`member_id` WHERE`tweets`.`tweet_id`=".$_GET["tweet_id"];
 
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
 
-  
+
   //ヒント２：送信されたtweet_idを使用してSQL文でデータベースからデータを一件取得
   //個別ページに表示するデータを取得
     $tweet_pick = $stmt->fetch(PDO::FETCH_ASSOC);

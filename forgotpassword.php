@@ -13,7 +13,7 @@ if(isset($_POST) && !empty($_POST)){
   $stmt = $dbh->prepare($sql);
   $stmt->execute($data);
 
-  一行取得
+  //一行取得
   $member = $stmt->fetch(PDO::FETCH_ASSOC);
 
   // パスワードを上書きするための文字列を作成(email + modeified)
