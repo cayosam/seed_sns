@@ -18,7 +18,7 @@ if(isset($_POST) && !empty($_POST)){
 
   // パスワードを上書きするための文字列を作成(email + modeified)
   $str_update_pw = $member["email"] + $member["modified"];
-  // 文字列を暗号化してUODATE
+  // 文字列を暗号化してUPDATE
   $update_sql = "UPDATE `members`
                  SET `password` = ?
                  WHERE `email`";

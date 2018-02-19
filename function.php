@@ -29,8 +29,7 @@ function delete_tweet(){
 
 
 
-   $sql = "UPDATE `tweets`
-           SET `delete_flag` = '1'
+   $sql = "UPDATE `tweets` SET `delete_flag` = '1'
            WHERE `tweets`.`tweet_id` = ".$delete_tweet_id;
 
   // SQL文実行

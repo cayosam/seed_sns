@@ -11,7 +11,7 @@
   $sql = "SELECT * FROM `members`
           INNER JOIN `follows`
           ON `members`.`member_id` = `follows`.`member_id`
-          where `follows`.`follower_id` = ".$_SESSION["id"]." ORDER BY `follows`.`created`DESC";
+          WHERE `follows`.`follower_id` = ".$_SESSION["id"]." ORDER BY `follows`.`created`DESC";
 
   $stmt = $dbh->prepare($sql);
   $stmt->execute();
