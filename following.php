@@ -10,10 +10,7 @@
 
   //一覧データを取得
   //`follows`.`member_id`が自分
-  $sql = "SELECT * FROM `members`
-          INNER JOIN `follows`
-          ON `members`.`member_id` = `follows`.`follower_id`
-          WHERE `follows`.`member_id` = ".$_SESSION["id"]." ORDER BY `follows`.`created`DESC";
+  $sql = "SELECT * FROM `members` INNER JOIN `follows` ON `members`.`member_id` = `follows`.`follower_id` WHERE `follows`.`member_id` = ".$_SESSION["id"]." ORDER BY `follows`.`created`DESC";
 
   $stmt = $dbh->prepare($sql);
   $stmt->execute();
@@ -46,9 +43,7 @@
   if(isset($_GET["unfollow_id"])){
     //フォロー情報を削除するSQL文を作成
     //member_idは自分の事、follower_idはフォロー解除したい人
-    $sql = "DELETE FROM`follows`
-            WHERE `member_id`=?
-            AND `follower_id`=?";
+    $sql = "DELETE FROM`follows` WHERE `member_id`=? AND `follower_id`=?";
 
     $data = array($_SESSION["id"],$_GET["unfollow_id"]);
     $unfl_stmt = $dbh->prepare($sql);
@@ -89,7 +84,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -124,7 +119,6 @@
         <div class="msg">
           <img src="picture_path/<?php echo $one_tweet["picture_path"]; ?>" width="48" height="48">
           <p> <span class="name"> <?php echo $one_tweet["nick_name"]; ?> </span></p>
-
           <a href="following.php?unfollow_id=<?php echo $one_tweet["follower_id"]; ?>">
         <button class="btn btn-default">フォロー解除</button></a>
         </div>

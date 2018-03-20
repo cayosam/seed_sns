@@ -1,6 +1,6 @@
 <?php
 //session_start();
-  //宿題：個別ページの表示を完成させよう
+  //個別ページの表示
   require('function.php');
 
   //ログインチェック(function.phpから呼び出し)
@@ -16,59 +16,39 @@
 
     // var_dump("postされてる");
 
-     if ($_POST["tweet"] == ""){
-        $error["tweet"] = "blank";
-       }
+      if ($_POST["tweet"] == ""){
+         $error["tweet"] = "blank";
+      }
 
-  if (!isset($error)){
+      if (!isset($error)){
 
-//SQL文作成
-//Update文
+        //SQL文作成
+        //Update文
+        $sql = "UPDATE `tweets` SET `tweet` = ? WHERE `tweets`.`tweet_id` = ?;";
 
-  $sql = "UPDATE `tweets`
-          SET `tweet` = ?
-           WHERE `tweets`.`tweet_id` = ?;";
+        //SQL文実行
+        //上記SQL文内の?の数と下記の$dataの格納されている数は同じになる
+        $data = array($_POST["tweet"],$_GET["tweet_id"]);
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute($data);
 
-//SQL文実行
-//上記SQL文内の?の数と下記の$dataの格納されている数は同じになる
-    $data = array($_POST["tweet"],$_GET["tweet_id"]);
+         //一覧ページ画面に移動する
+        header("Location: index.php");
 
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute($data);
-
-     //一覧ページ画面に移動する
-    header("Location: index.php");
-
+        }
   }
-}
 
 
-
-  //ヒント：$_GET["tweet_id"] の中に、表示したいつぶやきのtweet_idが格納されている
-
-    // $sql  = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
-    //          FROM `tweets`
-    //          INNER JOIN `members` 
-    //          ON `tweets`.`member_id`=`members`.`member_id`
-    //          WHERE `tweet_id`=".$_GET["tweet_id"];
-    $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
-            FROM `tweets`
-            INNER JOIN `members` 
-            ON `tweets`.`member_id` = `members`.`member_id`
-            WHERE`tweets`.`tweet_id`=".$_GET["tweet_id"];
-
+    //$_GET["tweet_id"] の中に、表示したいつぶやきのtweet_idが格納
+    $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path` FROM `tweets` INNER JOIN `members` ON `tweets`.`member_id` = `members`.`member_id` WHERE`tweets`.`tweet_id`=".$_GET["tweet_id"];
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
 
-  
-  //ヒント２：送信されたtweet_idを使用してSQL文でデータベースからデータを一件取得
-  //個別ページに表示するデータを取得
+    //送信されたtweet_idを使用してSQL文でデータベースからデータを一件取得
+    //個別ページに表示するデータを取得
     $tweet_pick = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
 //    $dbh = null;
-
-  //ヒント３；取得できたデータを一覧の1行分の表示を参考に、表示する
 ?>
 
 <!DOCTYPE html>
@@ -99,7 +79,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

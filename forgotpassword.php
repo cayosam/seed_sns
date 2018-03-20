@@ -8,7 +8,6 @@ if(isset($_POST) && !empty($_POST)){
           WHERE `email` = ?";
 
   $data = array($_POST["email"]);
-
   //SQL実行
   $stmt = $dbh->prepare($sql);
   $stmt->execute($data);
@@ -21,28 +20,28 @@ if(isset($_POST) && !empty($_POST)){
   // 文字列を暗号化してUPDATE
   $update_sql = "UPDATE `members`
                  SET `password` = ?
-                 WHERE `email`";
+                 WHERE `email` = ?";
   $update_data = array(sha1($str_update_pw),$member["email"]);
   //SQL文実行
   $update_stmt = $dbh->prepare($update_sql);
   $update_stmt->execute($update_data);
+
   // 暗号化した文字列を使用してURLを作成
-  $reset_url = "http://localhost/seed_sns/reset.php/code=".sha1($str_update_pw);
+  $reset_url = "http://localhost/seed_sns/reset.php?code=".sha1($str_update_pw);
   // メール文章作成
-  $mail_body = "パスワードを設定するため、下記リンクを押してください。
-  ";
+  $mail_body = "パスワードを設定するため、下記リンクを押してください。";
   $mail_body .=$reset_url;
 
   // メールの送信先
   $email = $member["email"];
   // タイトル設定
-  $title = "SeedSNSからパスワード忘れのお知らせ"
+  $title = "SeedSNSからパスワード忘れのお知らせ";
   // メール送信
   $mail_head = "From:seedkun@seedsns.com";
-  $mail_body = html_entity_decode($email_body,ENT_QUOTES,"UTF_8");//文字化け対策
+  $mail_body = html_entity_decode($mail_body,ENT_QUOTES,"UTF_8");//文字化け対策
 
   mb_language("Japanese");
-  mb_internal_encoding("UTF_8")
+  mb_internal_encoding("UTF_8");
   mb_send_mail($email,$title,$mail_body,$mail_head);
 
   //Thanksページに移動
@@ -78,7 +77,7 @@ if(isset($_POST) && !empty($_POST)){
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

@@ -6,15 +6,15 @@
   $sql = "SELECT * FROM `members` WHERE `member_id`=".$_SESSION["id"];
   $stmt = $dbh->prepare($sql);
   $stmt->execute();
+
   $profile_member = $stmt->fetch(PDO::FETCH_ASSOC);
+
   //一覧データを取得
-  $sql = "SELECT * FROM `members`
-          INNER JOIN `follows`
-          ON `members`.`member_id` = `follows`.`member_id`
-          WHERE `follows`.`follower_id` = ".$_SESSION["id"]." ORDER BY `follows`.`created`DESC";
+  $sql = "SELECT * FROM `members` INNER JOIN `follows` ON `members`.`member_id` = `follows`.`member_id` WHERE `follows`.`follower_id` = ".$_SESSION["id"]." ORDER BY `follows`.`created`DESC";
 
   $stmt = $dbh->prepare($sql);
   $stmt->execute();
+
   // 一覧表示用の配列を用意
   $tweet_list = array();
   //　複数行のデータを取得するためループ
@@ -24,11 +24,10 @@
       break;
     }else{
       //following_flagを用意して、自分をフォローしていたら１、していなかったら０を代入
-      //自分をフォローしているか確認する、また、その逆（フォローしてくれている人を探す）SQL
-      $fl_flag_sql = "SELECT COUNT(*) as `cnt`
-                      FROM `follows`
-                      WHERE `member_id`=".$_SESSION["id"]."
-                      AND `follower_id`=".$one_tweet["member_id"];
+      //自分をフォローしているか確認する、また、その逆（フォローしてくれている人を探す）
+      //COUNT() テーブル内のレコードの件数を取得するSQL文の関数。ヒットした件数を取得。これがない場合は、件数ではなくデータ全部取得となる
+      //as `cnt`　は列名を cnt としている
+      $fl_flag_sql = "SELECT COUNT(*) as `cnt` FROM `follows` WHERE `member_id`=".$_SESSION["id"]." AND `follower_id`=".$one_tweet["member_id"];
       $fl_stmt = $dbh->prepare($fl_flag_sql);
       $fl_stmt->execute();
       $fl_flag = $fl_stmt->fetch(PDO::FETCH_ASSOC);
@@ -56,10 +55,7 @@
   if(isset($_GET["unfollow_id"])){
     //フォロー情報を削除するSQL文を作成
     //member_idは自分の事、follower_idはフォロー解除したい人
-    $sql = "DELETE FROM`follows`
-            WHERE `member_id`=?
-            AND `follower_id`=?";
-
+    $sql = "DELETE FROM`follows` WHERE `member_id`=? AND `follower_id`=?";
     $data = array($_SESSION["id"],$_GET["unfollow_id"]);
     $unfl_stmt = $dbh->prepare($sql);
     $unfl_stmt->execute($data);
@@ -99,7 +95,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

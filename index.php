@@ -30,7 +30,7 @@
   if (isset($_POST) && !empty($_POST)) {
 
     // var_dump("postされてる");
-
+    //入力チェック
      if ($_POST["tweet"] == ""){
         $error["tweet"] = "blank";
        }
@@ -275,7 +275,7 @@ if(isset($_SESSION['id'])){
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -312,8 +312,6 @@ if(isset($_SESSION['id'])){
                 <input type="text" name="hashtag" class="form-control" placeholder="例： #Japan #Cebu ">
               </div>
             </div>
-
-
 
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">

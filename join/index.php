@@ -79,35 +79,31 @@ if (isset($_POST) && !empty($_POST)){
       //substr...文字列から範囲指定して一部分の文字を切り出す関数
       //substr （文字列、切り出す文字のスタートの数）マイナスの場合は末尾からn文字目となる
       //例）i.png がファイル名の場合、$extpng
-
       $ext = substr($_FILES['picture_path']['name'], -3);
 
      if(($ext == 'png')||($ext == 'jpg')||($ext == 'gif')){
-
-    //画像のアップロード処理
-    //例）eriko1.pngを指定した時、$_picture_nameの中身は20171222142530eriko1.pngというような文字列が代入される。
-    //（eriko1.pngは元々のファイルの名前、201712221425は日時）$_FILES['picture_path']['name']はファイル専用のグローバル変数。二次元配列になっている。
-    //YmdHisは年、月、日、24時間表記、分、秒を表している。
-    //ファイル名の決定
+      //画像のアップロード処理
+      //例）eriko1.pngを指定した時、$_picture_nameの中身は20171222142530eriko1.pngというような文字列が代入される。
+      //（eriko1.pngは元々のファイルの名前、201712221425は日時）$_FILES['picture_path']['name']はファイル専用のグローバル変数。二次元配列になっている。
+      //YmdHisは年、月、日、24時間表記、分、秒を表している。
+      //ファイル名の決定
       $picture_name = date('YmdHis') . $_FILES['picture_path']['name'];
 
-    //アップロード（フォルダに書き込み権限がないと保存されない。）
+      //アップロード（フォルダに書き込み権限がないと保存されない。）
       //move_uploded_file(firenameアップロードしたいもの,destinationサーバのどこにどういう名前でアップロードするかパス指定。)
       move_uploaded_file($_FILES['picture_path']['tmp_name'], '../picture_path/'.$picture_name);
 
 
-    //SESSHION変数に入力された値を保存(どこの画面からでも使用できる！)
-    //注意※必ず、ファイルの一番上に、session_
-
+      //SESSHION変数に入力された値を保存(どこの画面からでも使用できる！)
+      //注意※必ず、ファイルの一番上に、session__start(); を記述
+      // POST送信された情報をjoinというキー指定で保存
       $_SESSION['join'] = $_POST;
       $_SESSION['join']['picture_path'] = $picture_name;
 
-    //check.php
+      //check.php
       header('Location: check.php');
-
       //これ以下のコードを無駄に処理しないように、ページの処理を終了させる
       exit();
-
 
     }else{
       $error["image"] = 'type';
@@ -166,13 +162,13 @@ if (isset($_POST) && !empty($_POST)){
     <div class="row">
       <div class="col-md-6 col-md-offset-3 content-margin-top">
         <legend>会員登録</legend>
-        <form method="post" action="" class="form-horizontal" role="form" role="form" enctype="multipart/form-data">
+        <form method="post" action="" class="form-horizontal" role="form" enctype="multipart/form-data">
           <!-- ニックネーム -->
           <div class="form-group">
             <label class="col-sm-4 control-label">ニックネーム</label>
             <div class="col-sm-8">
               <input type="text" name="nick_name" class="form-control" placeholder="例： Seed kun" value="<?php echo $nick_name; ?>">
-              <?php if ((isset($error["nick_name"]) && ($error["nick_name"]) == 'blank')){ ?>
+              <?php if ((isset($error["nick_name"])) && ($error["nick_name"] == 'blank')){ ?>
               <p class="error">* ニックネームを入力してください。</p>
               <?php } ?>
             </div>
@@ -182,12 +178,13 @@ if (isset($_POST) && !empty($_POST)){
           <div class="form-group">
             <label class="col-sm-4 control-label">メールアドレス</label>
             <div class="col-sm-8">
-              <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com" value="<?php echo $email; ?>">
-            <?php if ((isset($error["email"]) && ($error["email"]) == 'blank')){ ?>
+              <!-- <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com" value="<?php // echo $email; ?>"> -->
+              <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com">
+            <?php if ((isset($error["email"])) && ($error["email"] == 'blank')){ ?>
               <p class="error">* Emailを入力してください。</p>
               <?php } ?>
 
-               <?php if ((isset($error["email"]) && ($error["email"]) == 'duplicated')){ ?>
+               <?php if ((isset($error["email"])) && ($error["email"] == 'duplicated')){ ?>
               <p class="error">* 入力されたEmailは登録済みです。</p>
               <?php } ?>
             </div>
@@ -197,11 +194,12 @@ if (isset($_POST) && !empty($_POST)){
           <div class="form-group">
             <label class="col-sm-4 control-label">パスワード</label>
             <div class="col-sm-8">
-              <input type="password" name="password" class="form-control" placeholder="" value="<?php echo $password; ?>">
-              <?php if ((isset($error["password"]) && ($error["password"]) == 'blank')){ ?>
+              <!-- <input type="password" name="password" class="form-control" placeholder="" value="<?php echo $password; ?>"> -->
+              <input type="password" name="password" class="form-control" placeholder="">
+              <?php if ((isset($error["password"])) && ($error["password"] == 'blank')){ ?>
               <p class="error">* パスワードを入力してください。</p>
               <?php } ?>
-              <?php if ((isset($error["password"]) && ($error["password"]) == 'length')){ ?>
+              <?php if ((isset($error["password"])) && ($error["password"] == 'length')){ ?>
               <p class="error">* パスワードは4文字以上を入力してください。</p>
               <?php } ?> 
              </div>
@@ -212,7 +210,7 @@ if (isset($_POST) && !empty($_POST)){
             <label class="col-sm-4 control-label">プロフィール写真</label>
             <div class="col-sm-8">
               <input type="file" name="picture_path" class="form-control">
-              <?php if ((isset($error["image"]) && ($error["image"]) == 'type')){ ?>
+              <?php if ((isset($error["image"])) && ($error["image"] == 'type')){ ?>
                <p class="error">* 画像ファイルを選択してください。</p>
              <?php } ?> 
             </div>

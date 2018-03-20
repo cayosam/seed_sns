@@ -1,8 +1,6 @@
 <?php
   session_start();
 
-
-
   //DBに接続(五行おまとめ)
   //前回作ったdbconnect.phoと場所かちがうので注意
   require('../dbconnect.php');
@@ -15,39 +13,35 @@
     $password = $_SESSION['join']['password'];
     $picture_path = $_SESSION['join']['picture_path'];
 
-
-
     try {
     //DBに会員情報を登録するSQL文を作成(三行の決まり文句+$data)
-    //下記の$sql文はphpMyAdminのSQL>INSERTからコビペして修正して使用
+    //下記の$sql文はphpMyAdminのSQL->INSERTからコビペして修正して使用
     //now() とはMySQLが用意してくれている関数。現在日時を取得できる
     $sql = "INSERT INTO `members`(`nick_name`, `email`, `password`, `picture_path`, `created`, `modified`) VALUES (?,?,?,?,now(),now())";
     //SQL文実行
     //shl1 暗号化を行う関数の一つ
     $data = array($nick_name,$email,sha1($password),$picture_path);
-
     $stmt = $dbh->prepare($sql);
     $stmt->execute($data);
 
     //$_SESSIONの情報を削除
     //unset 指定した変数を削除するという意味。SESSIONじゃなくても使える。
+    //セキュリティ上プレーンな（目で見て読める）passwordがSESSION変数に残ってるので消す、というのがその処理の役割。
+    //サーバー上ですが、SESSION情報に残る。破棄される前に悪い人がSESSION変数の情報を抜き取るなどすると一発でなりすましなどを行える情報が手に入ってしまうのです。
     unset($_SESSION["join"]);
 
     //thanks.php へ遷移
     header('Location: thanks.php');
     exit();
-  //Exceptionは例外という意味
+    //Exceptionは例外という意味
     } catch (Exception $e) {
       //tryで囲まれた処理でエラーが発生した時にやりたい処理を記述する場所（$e のところに表示させたいことを書く）
 
       echo 'SQL文実行エラー:'.$e->getMessage();
       exit();
-
     }
 
-
 }
-
 
 ?>
 
@@ -73,6 +67,7 @@
 
   </head>
   <body>
+  <!-- nav要素　セクショニング・コンテンツ（HTMLにあるコンテンツ・モデルのカテゴリーの1つ、サイト内の構造上のセクション（節、章、大きな段落など）であることを表す）に属し、ナビゲーション・リンク（他のページや”ページ内の一部”へ飛ばすリンク）のセクションを表します -->
   <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
           <!-- Brand and toggle get grouped for better mobile display -->
@@ -126,7 +121,8 @@
             </table>
 
              <!--index.php内のボタンを押すことで移動するので、それ自体が相対パスとなる。そのため、index.phpと書くだけでもどのindex.phpか正しく判断される。 -->
-            <a href="index.php?action=rewrite">&laquo;&nbsp;書き直す</a> |
+             <!-- &laquo;は "«"　&nbsp;は空白 -->
+            <a href="index.php?action=rewrite">&laquo;&nbsp;書き直す</a>
             <input type="submit" class="btn btn-default" value="会員登録">
           </div>
         </form>
