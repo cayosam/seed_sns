@@ -20,7 +20,7 @@
       ///一覧ページに戻る
       //eader("Location: index.php");
 
-        }
+     }
     //unlikeボタンが押された時
      if(isset($_GET["unlike_tweet_id"])){
       //登録されているlike情報をlikesテーブルから削除

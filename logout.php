@@ -7,7 +7,7 @@
   //セッション情報を有効期限切れにする、サーバー側のクッキー情報を削除
   if(ini_get("session.use_cookies")){
      $params = session_get_cookie_params();
-     setcookie(session_name(),'',time() - 42000,$params['path'],$params["domain"],$params['secure'],$params['httponly']);
+     setcookie(session_name(),'',time() - 42000,$params['path'],$params['domain'],$params['secure'],$params['httponly']);
      //上記の文は決まり文句のようになっている。-42000は適当に入れた数字
 
   }

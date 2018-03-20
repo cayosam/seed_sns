@@ -12,10 +12,10 @@
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
 
-         //1件数取得
+    //1件数取得
     $profile_member = $stmt->fetch(PDO::FETCH_ASSOC);
 
-      //一覧データを取得
+    //一覧データを取得
     $sql = "SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path`
             FROM `tweets`
             INNER JOIN `members` 
@@ -24,8 +24,8 @@
             AND `tweets`.`member_id`=".$_GET["member_id"]."
             ORDER BY `tweets`.`modified` DESC ";
 
-        $nstmt = $dbh->prepare($sql);
-        $nstmt->execute();
+    $nstmt = $dbh->prepare($sql);
+    $nstmt->execute();
        
        // 一覧表示用の配列を用意
         $tweet_list = array();
@@ -271,7 +271,7 @@ if(isset($_SESSION['id'])){
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

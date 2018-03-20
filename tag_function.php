@@ -19,7 +19,7 @@ function exists_tag($tag,$dbh){
 var_dump($tag_count);
 
   //存在しなかったら追加
-  if($tag_count['cnt'] == 0){
+  if($tag_count["cnt"] == 0){
       //tagsテーブルへデータ追加するSQL文追加(INSERT)
       $tag_create_sql = "INSERT INTO `tags` (`tag`)
                          VALUES (?);";
@@ -62,11 +62,10 @@ function create_tweet_tags($relate_tweet_id,$input_tags,$dbh){
 
       }
         // tweet_tagsテーブルへ登録
-        $create_tweet_tags_sql = "INSERT INTO `tweet_tags`(`tweet_id`,`tag_id`)
-                                   VALUES(".$relate_tweet_id.",".$one_tag["id"].");";
+        $create_tweet_tags_sql = "INSERT INTO `tweet_tags`(`tweet_id`,`tag_id`) VALUES(".$relate_tweet_id.",".$one_tag["id"].");";
         $ctt_stmt = $dbh->prepare($create_tweet_tags_sql);
         $ctt_stmt->execute();
-      
+
     }
 
 }
